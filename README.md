@@ -2,6 +2,16 @@
 
 https://saltswap.finance
 
+```
+npm install
+```
+
+## Deployment
+
+```
+node deploySalt
+```
+
 ## Deployed Contracts
 
 ### BSCTESTNET
