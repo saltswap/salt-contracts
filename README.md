@@ -6,6 +6,8 @@ https://saltswap.finance
 
 ### BSCTESTNET
 
+- SaltToken - https://testnet.bscscan.com/address/0xbaa6ecff1d77bbc46625ce753ed5cd0c5d0f8426
+
 ### BSCMAINNET
 - CakeToken - https://bscscan.com/token/0xf952fc3ca7325cc27d15885d37117676d25bfda6
 - MasterChef - https://bscscan.com/address/0xe70E9185F5ea7Ba3C5d63705784D8563017f2E57
