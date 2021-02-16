@@ -4,6 +4,11 @@ import "./libs/BEP20.sol";
 
 // SaltToken with Governance.
 contract SaltToken is BEP20('Salt bae', 'SALT') {
+
+    constructor() public {
+        _mint(msg.sender, 1e18);
+    }
+
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
