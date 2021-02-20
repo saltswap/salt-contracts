@@ -24,5 +24,5 @@ node deploySalt
 
 - **SALT:** [0x2849b1aE7E04A3D9Bc288673A92477CF63F28aF4](https://bscscan.com/address/0x2849b1aE7E04A3D9Bc288673A92477CF63F28aF4)
 - **MasterChef:** [0xda8010A34ED29430B0B7E25c84cbe409506CA05f](https://bscscan.com/address/0xda8010A34ED29430B0B7E25c84cbe409506CA05f)
-- **Timelock:** [TODO](https://bscscan.com/address/TODO) (delay: 24h)
+- **Timelock:** [0x3278a9feadf2a461f6e35008e1ca611b64317ac6](https://www.bscscan.com/address/0x3278a9feadf2a461f6e35008e1ca611b64317ac6) (delay: 24h)
 - **MultiCall:** [TODO](https://bscscan.com/address/TODO)
