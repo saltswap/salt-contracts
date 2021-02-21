@@ -1,6 +1,4 @@
-# SaltSwap
-
-https://saltswap.finance
+# SaltSwap Smart Contracts
 
 ```
 npm install
