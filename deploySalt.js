@@ -1,9 +1,9 @@
 const Web3 = require('web3');
 const EthereumTx = require('ethereumjs-tx').Transaction;
 
-const Token = require('./client/src/contracts/SaltToken.json');
-const MasterChef = require('./client/src/contracts/MasterChef.json');
-const SmartChef = require('./client/src/contracts/SmartChef.json');
+const Token = require('./build/contracts//SaltToken.json');
+const MasterChef = require('./build/contracts//MasterChef.json');
+const SmartChef = require('./build/contracts//SmartChef.json');
 // const IERC20 = require('@openzeppelin/contracts/build/contracts/IERC20.json');
 
 const config = require('./config-deploy.json');
@@ -56,8 +56,9 @@ async function deployTokenContract(account, nonce) {
         // setUniswapPool(newContractInstance.options.address, account, ++nonce);
         // unpause(newContractInstance.options.address, account, ++nonce);
         deployMasterChef(newContractInstance.options.address, account, nonce);
-        const aRandomTokenToEarn = newContractInstance.options.address
-        deploySmartChef(newContractInstance.options.address, aRandomTokenToEarn, account, nonce);
+        const aRandomTokenToEarn = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee" // BUSD
+        const rewardAmount = 0.01
+        deploySmartChef(newContractInstance.options.address, aRandomTokenToEarn, rewardAmount, account, nonce);
     });
 }
 
@@ -85,27 +86,6 @@ async function deployMasterChef(tokenContractAddress, account, nonce) {
     });
 }
 
-async function deploySmartChef(tokenContractAddress, rewardTokenAddress, account, nonce) {
-    const saltPerBlock = web3.utils.toWei('1', 'ether');
-
-    SmartChefContract.deploy({
-        data: SmartChef.bytecode,
-        arguments: [ tokenContractAddress, rewardTokenAddress, saltPerBlock, 6347879 ]
-    })
-    .send({
-        nonce: web3.utils.toHex(nonce++),
-        from: mainAccount.address,
-        gas: web3.utils.toHex(config.gasLimit),
-        gasPrice: web3.utils.toHex(config.gasPrice),
-    })
-    .then((newContractInstance) => {
-        console.log(`SmartChef contract deployed at ${newContractInstance.options.address}`);
-
-        // now we need to deposit rewardTokenAddress
-
-    });
-}
-
 async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, withUpdate, account, nonce) {
     // function add(uint256 _allocPoint, IBEP20 _lpToken, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner {
     const txOptions = {
@@ -127,5 +107,46 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
     .on('receipt', function(receipt) {
         var transactionHash = receipt.transactionHash;
         console.log('receipt', receipt);
+    });
+}
+
+async function setupSmartChef() {
+    const privateKey = mainAccount.privateKey;
+    const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
+    web3.eth.accounts.wallet.add(account);
+    web3.eth.defaultAccount = account.address;
+
+    let nonce = await web3.eth.getTransactionCount(mainAccount.address);
+    console.log(nonce);
+
+    const SALTaddress = "0x89dcddca577f3658a451775d58ea99da532263c8"
+    const aRandomTokenToEarn = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee" // BUSD
+    const rewardAmount = 0.01
+    deploySmartChef(SALTaddress, aRandomTokenToEarn, rewardAmount, account, nonce);
+}
+
+setupSmartChef()
+
+async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, account, nonce) {
+    const saltPerBlock = web3.utils.toWei('1', 'ether');
+    const startBlock = 6347879
+    const endBlock = 16347879
+
+    SmartChefContract.deploy({
+        data: SmartChef.bytecode,
+        arguments: [ tokenContractAddress, rewardTokenAddress, saltPerBlock, startBlock, endBlock ]
+    })
+    .send({
+        nonce: web3.utils.toHex(nonce2++),
+        from: mainAccount.address,
+        gas: web3.utils.toHex(config.gasLimit),
+        gasPrice: web3.utils.toHex(config.gasPrice),
+    })
+    .then((newContractInstance) => {
+        console.log(`SmartChef contract deployed at ${newContractInstance.options.address}`);
+
+        // now we need to deposit rewardTokenAddress
+        SafeBEP20.safeTransferFrom(rewardTokenAddress, newContractInstance, rewardAmount)
+
     });
 }
