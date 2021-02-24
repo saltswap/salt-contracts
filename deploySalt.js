@@ -112,7 +112,7 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
 }
 
 async function setupSmartChef() {
-    
+    const privateKey = mainAccount.privateKey
     const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
     web3.eth.accounts.wallet.add(account);
     web3.eth.defaultAccount = account.address;
@@ -129,18 +129,18 @@ async function setupSmartChef() {
 setupSmartChef()
 
 async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, account, nonce) {
-    const saltPerBlock = web3.utils.toWei('1', 'ether');
-    const startBlock = 6347879
-    const endBlock = 16347879
+    const rewardPerBlock = web3.utils.toWei('0.0001', 'ether');
+    const startBlock = 6572920
+    const endBlock = 6671920
     console.log("gaslimit,",config.gasLimit)
     console.log("gasPrice,",config.gasPrice)
 
     SmartChefContract.deploy({
         data: SmartChef.bytecode,
-        arguments: [ tokenContractAddress, rewardTokenAddress, saltPerBlock, startBlock, endBlock ]
+        arguments: [ tokenContractAddress, rewardTokenAddress, rewardPerBlock, startBlock, endBlock ]
     })
     .send({
-        nonce: web3.utils.toHex(nonce++),
+        nonce: web3.utils.toHex(nonce),
         from: account.address,
         gas: web3.utils.toHex(config.gasLimit),
         gasPrice: web3.utils.toHex(config.gasPrice),
