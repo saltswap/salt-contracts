@@ -19,10 +19,11 @@ const INFURA_API_KEY = config.infuraApiKey;
 const NETWORK_ID = config.networkId;
 
 // const web3 = new Web3(new Web3.providers.HttpProvider(`https://bsc-dataseed.binance.org/`));
-const web3 = new Web3(new Web3.providers.HttpProvider(`https://data-seed-prebsc-1-s1.binance.org:8545/`));
+const web3 = new Web3(new Web3.providers.HttpProvider(`https://data-seed-prebsc-2-s1.binance.org:8545/`));
 
 const TokenContract = new web3.eth.Contract(Token.abi);
 const MasterChefContract = new web3.eth.Contract(MasterChef.abi);
+const SmartChefContract = new web3.eth.Contract(SmartChef.abi);
 // const ERC20 = new web3.eth.Contract(IERC20.abi);
 
 // setup();
@@ -111,13 +112,13 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
 }
 
 async function setupSmartChef() {
-    const privateKey = mainAccount.privateKey;
+    
     const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
     web3.eth.accounts.wallet.add(account);
     web3.eth.defaultAccount = account.address;
 
-    let nonce = await web3.eth.getTransactionCount(mainAccount.address);
-    console.log(nonce);
+    let nonce = await web3.eth.getTransactionCount(account.address);
+    console.log("nonce:",nonce);
 
     const SALTaddress = "0x89dcddca577f3658a451775d58ea99da532263c8"
     const aRandomTokenToEarn = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee" // BUSD
@@ -131,14 +132,16 @@ async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardA
     const saltPerBlock = web3.utils.toWei('1', 'ether');
     const startBlock = 6347879
     const endBlock = 16347879
+    console.log("gaslimit,",config.gasLimit)
+    console.log("gasPrice,",config.gasPrice)
 
     SmartChefContract.deploy({
         data: SmartChef.bytecode,
         arguments: [ tokenContractAddress, rewardTokenAddress, saltPerBlock, startBlock, endBlock ]
     })
     .send({
-        nonce: web3.utils.toHex(nonce2++),
-        from: mainAccount.address,
+        nonce: web3.utils.toHex(nonce++),
+        from: account.address,
         gas: web3.utils.toHex(config.gasLimit),
         gasPrice: web3.utils.toHex(config.gasPrice),
     })
