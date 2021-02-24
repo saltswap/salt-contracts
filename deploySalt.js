@@ -3,6 +3,7 @@ const EthereumTx = require('ethereumjs-tx').Transaction;
 
 const Token = require('./client/src/contracts/SaltToken.json');
 const MasterChef = require('./client/src/contracts/MasterChef.json');
+const SmartChef = require('./client/src/contracts/SmartChef.json');
 // const IERC20 = require('@openzeppelin/contracts/build/contracts/IERC20.json');
 
 const config = require('./config-deploy.json');
@@ -55,6 +56,8 @@ async function deployTokenContract(account, nonce) {
         // setUniswapPool(newContractInstance.options.address, account, ++nonce);
         // unpause(newContractInstance.options.address, account, ++nonce);
         deployMasterChef(newContractInstance.options.address, account, nonce);
+        const aRandomTokenToEarn = newContractInstance.options.address
+        deploySmartChef(newContractInstance.options.address, aRandomTokenToEarn, account, nonce);
     });
 }
 
@@ -79,6 +82,27 @@ async function deployMasterChef(tokenContractAddress, account, nonce) {
 
         // unpause(newContractInstance.options.address, account, ++nonce);
         // deployCrowdsaleContract(newContractInstance.options.address, account, nonce++);
+    });
+}
+
+async function deploySmartChef(tokenContractAddress, rewardTokenAddress, account, nonce) {
+    const saltPerBlock = web3.utils.toWei('1', 'ether');
+
+    SmartChefContract.deploy({
+        data: SmartChef.bytecode,
+        arguments: [ tokenContractAddress, rewardTokenAddress, saltPerBlock, 6347879 ]
+    })
+    .send({
+        nonce: web3.utils.toHex(nonce++),
+        from: mainAccount.address,
+        gas: web3.utils.toHex(config.gasLimit),
+        gasPrice: web3.utils.toHex(config.gasPrice),
+    })
+    .then((newContractInstance) => {
+        console.log(`SmartChef contract deployed at ${newContractInstance.options.address}`);
+
+        // now we need to deposit rewardTokenAddress
+
     });
 }
 
