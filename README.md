@@ -10,6 +10,15 @@ npm install
 node deploySalt
 ```
 
+## Setup
+`
+vi .env
+`
+`
+address=youraddress
+privateKey=yourprivatekey
+`
+
 ## Deployed Contracts
 
 ### Binance Smart Chain Testnet
