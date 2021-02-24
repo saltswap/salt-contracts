@@ -92,7 +92,7 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
     const txOptions = {
         nonce: web3.utils.toHex(nonce),
         from: mainAccount.address,
-        to: masterChefAddress,
+        to: masterChefAddress,  
         gas: web3.utils.toHex(config.gasLimit),
         gasPrice: web3.utils.toHex(config.gasPrice),
         data: MasterChefContract.methods.add(allocPoint, lpTokenAddress, depositFee, withUpdate).encodeABI()
@@ -126,7 +126,7 @@ async function setupSmartChef() {
     deploySmartChef(SALTaddress, aRandomTokenToEarn, rewardAmount, account, nonce);
 }
 
-setupSmartChef()
+// setupSmartChef()
 
 async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, account, nonce) {
     const rewardPerBlock = web3.utils.toWei('0.0001', 'ether');
@@ -135,21 +135,97 @@ async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardA
     console.log("gaslimit,",config.gasLimit)
     console.log("gasPrice,",config.gasPrice)
 
-    SmartChefContract.deploy({
-        data: SmartChef.bytecode,
-        arguments: [ tokenContractAddress, rewardTokenAddress, rewardPerBlock, startBlock, endBlock ]
+    TokenContract.deploy({
+        data: Token.bytecode,
     })
     .send({
-        nonce: web3.utils.toHex(nonce),
-        from: account.address,
+        nonce: web3.utils.toHex(nonce++),
+        from: mainAccount.address,
         gas: web3.utils.toHex(config.gasLimit),
         gasPrice: web3.utils.toHex(config.gasPrice),
     })
-    .then((newContractInstance) => {
-        console.log(`SmartChef contract deployed at ${newContractInstance.options.address}`);
+    .then((saltContractAddress) => {
+        console.log(`Token contract deployed at ${saltContractAddress.options.address}`);
 
-        // now we need to deposit rewardTokenAddress
-        SafeBEP20.safeTransferFrom(rewardTokenAddress, newContractInstance, rewardAmount)
+            SmartChefContract.deploy({
+                data: SmartChef.bytecode,
+                arguments: [ saltContractAddress.options.address, rewardTokenAddress, rewardPerBlock, startBlock, endBlock ]
+            })
+            .send({
+                nonce: web3.utils.toHex(nonce++),
+                from: account.address,
+                gas: web3.utils.toHex(config.gasLimit),
+                gasPrice: web3.utils.toHex(config.gasPrice),
+            })
+            .then((newContractInstance) => {
+                console.log(`SmartChef contract deployed at ${newContractInstance.options.address}`);
 
-    });
+                saltContractAddress.approve(newContractInstance.options.address, 100000000000000000)
+                // now we need to deposit rewardTokenAddress
+                saltContractAddress.safeTransferFrom(rewardTokenAddress, newContractInstance, rewardAmount)
+
+            });
+
+});
 }
+
+async function startSmartFarming() {
+    const privateKey = mainAccount.privateKey
+    const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
+    web3.eth.accounts.wallet.add(account);
+    web3.eth.defaultAccount = account.address;
+
+    let nonce = await web3.eth.getTransactionCount(account.address);
+    console.log("nonce:",nonce);
+
+    const SALTaddress = "0x4C5369BDE459Df5E57bB992544dA5e8F95a25EC1"
+    const aRandomTokenToEarn = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee" // BUSD
+    const smartChef = "0x3B88780Abfb5A913EB68e16729d46E3463bE9904"
+
+    // Approve smartchef to get SALT
+    const txOptions = {
+        nonce: web3.utils.toHex(nonce),
+        from: mainAccount.address,
+        to: SALTaddress,  
+        gas: web3.utils.toHex(config.gasLimit),
+        gasPrice: web3.utils.toHex(config.gasPrice),
+        data: TokenContract.methods.approve(smartChef, 100000000000).encodeABI()
+    }
+    const signed  = await web3.eth.accounts.signTransaction(txOptions, account.privateKey);
+    web3.eth.sendSignedTransaction(signed.rawTransaction)
+    .on('error', function(err) {
+        console.log('error', err);
+    })
+    .on('transactionHash', function(transactionHash) {
+        console.log('transactionHash', transactionHash);
+    })
+    .on('receipt', function(receipt) {
+        var transactionHash = receipt.transactionHash;
+        console.log('receipt', receipt);
+    });
+
+    // send to smartchef the reward token
+    const BUSDtoSend = web3.utils.toWei('1', 'ether');
+    const txOptions2 = {
+        nonce: web3.utils.toHex(nonce+1),
+        from: mainAccount.address,
+        to: aRandomTokenToEarn,  
+        gas: web3.utils.toHex(config.gasLimit),
+        gasPrice: web3.utils.toHex(config.gasPrice),
+        data: TokenContract.methods.transfer(smartChef, BUSDtoSend).encodeABI()
+    }
+    const signed2  = await web3.eth.accounts.signTransaction(txOptions2, account.privateKey);
+    web3.eth.sendSignedTransaction(signed2.rawTransaction)
+    .on('error', function(err) {
+        console.log('error', err);
+    })
+    .on('transactionHash', function(transactionHash) {
+        console.log('transactionHash', transactionHash);
+    })
+    .on('receipt', function(receipt) {
+        var transactionHash = receipt.transactionHash;
+        console.log('receipt', receipt);
+    });
+
+}
+startSmartFarming()
