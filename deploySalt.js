@@ -125,10 +125,10 @@ async function setupSmartChef() {
     const rewardPerBlock = web3.utils.toWei('0.0001', 'ether');
 
 
-    // deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce);
+    deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce);
 
     // deploy a new SALT Token
-    TokenContract.deploy({
+    /* TokenContract.deploy({
         data: Token.bytecode,
     })
         .send({
@@ -140,7 +140,7 @@ async function setupSmartChef() {
         .then((saltContractAddress) => {
             console.log(`Token contract deployed at ${saltContractAddress.options.address}`);
             deploySmartChef(saltContractAddress.options.address, rewardToken, rewardAmount, rewardPerBlock, account, nonce);
-        });
+        }); */
 }
 
 async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, rewardPerBlock, account, nonce) {
@@ -198,7 +198,7 @@ async function sendRewardTokenToSmartChef(smartChef, rewardToken, amountToSend) 
         });
 }
 
- startSmartFarming()
+ // startSmartFarming()
 
 async function startSmartFarming() {
     const privateKey = mainAccount.privateKey
