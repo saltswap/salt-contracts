@@ -77,6 +77,10 @@ contract SmartChef is Ownable {
         bonusEndBlock = block.number;
     }
 
+    function adjustBlockEnd() public onlyOwner {
+        uint256 totalLeft = rewardToken.balanceOf(address(this));
+        bonusEndBlock = block.number + totalLeft.div(rewardPerBlock);
+    }
 
     // Return reward multiplier over the given _from to _to block.
     function getMultiplier(uint256 _from, uint256 _to) public view returns (uint256) {

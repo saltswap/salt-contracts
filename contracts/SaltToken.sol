@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 import "./libs/BEP20.sol";
 
 // SaltToken with Governance.
-contract SaltToken is BEP20('SaltSwap', 'SALT') {
+contract SaltToken is BEP20('Salt TEST', 'SALT') {
 
     constructor() public {
         _mint(msg.sender, 10e18);

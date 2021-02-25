@@ -108,7 +108,7 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
         });
 }
 
-// setupSmartChef()
+ setupSmartChef()
 
 async function setupSmartChef() {
     const privateKey = mainAccount.privateKey
@@ -121,14 +121,14 @@ async function setupSmartChef() {
 
     const SALTaddress = "0x89dcddca577f3658a451775d58ea99da532263c8"
     const rewardToken = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee" // BUSD
-    const rewardAmount = web3.utils.toWei('0.1', 'ether');
-    const rewardPerBlock = web3.utils.toWei('0.0001', 'ether');
+    const rewardAmount = web3.utils.toWei('2', 'ether');
+    const rewardPerBlock = web3.utils.toWei('0.000001', 'ether');
 
 
-    deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce);
+    // deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce);
 
     // deploy a new SALT Token
-    /* TokenContract.deploy({
+     TokenContract.deploy({
         data: Token.bytecode,
     })
         .send({
@@ -140,12 +140,14 @@ async function setupSmartChef() {
         .then((saltContractAddress) => {
             console.log(`Token contract deployed at ${saltContractAddress.options.address}`);
             deploySmartChef(saltContractAddress.options.address, rewardToken, rewardAmount, rewardPerBlock, account, nonce);
-        }); */
+        }); 
 }
 
 async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, rewardPerBlock, account, nonce) {
-    const startBlock = 6572920
-    const endBlock = 6671920
+    const startBlock = 6606282
+    const endBlock = startBlock + Math.floor(rewardAmount / rewardPerBlock)
+    console.log("startblock:", startBlock)
+    console.log("endBlock:", endBlock)
 
     // deploy SmartChef
     SmartChefContract.deploy({
