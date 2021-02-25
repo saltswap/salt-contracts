@@ -46,21 +46,21 @@ async function deployTokenContract(account, nonce) {
     TokenContract.deploy({
         data: Token.bytecode,
     })
-    .send({
-        nonce: web3.utils.toHex(nonce++),
-        from: mainAccount.address,
-        gas: web3.utils.toHex(config.gasLimit),
-        gasPrice: web3.utils.toHex(config.gasPrice),
-    })
-    .then((newContractInstance) => {
-        console.log(`Token contract deployed at ${newContractInstance.options.address}`);
-        // setUniswapPool(newContractInstance.options.address, account, ++nonce);
-        // unpause(newContractInstance.options.address, account, ++nonce);
-        deployMasterChef(newContractInstance.options.address, account, nonce);
-        const aRandomTokenToEarn = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee" // BUSD
-        const rewardAmount = 0.01
-        deploySmartChef(newContractInstance.options.address, aRandomTokenToEarn, rewardAmount, account, nonce);
-    });
+        .send({
+            nonce: web3.utils.toHex(nonce++),
+            from: mainAccount.address,
+            gas: web3.utils.toHex(config.gasLimit),
+            gasPrice: web3.utils.toHex(config.gasPrice),
+        })
+        .then((newContractInstance) => {
+            console.log(`Token contract deployed at ${newContractInstance.options.address}`);
+            // setUniswapPool(newContractInstance.options.address, account, ++nonce);
+            // unpause(newContractInstance.options.address, account, ++nonce);
+            deployMasterChef(newContractInstance.options.address, account, nonce);
+            const aRandomTokenToEarn = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee" // BUSD
+            const rewardAmount = 0.01
+            deploySmartChef(newContractInstance.options.address, aRandomTokenToEarn, rewardAmount, account, nonce);
+        });
 }
 
 async function deployMasterChef(tokenContractAddress, account, nonce) {
@@ -68,23 +68,23 @@ async function deployMasterChef(tokenContractAddress, account, nonce) {
 
     MasterChefContract.deploy({
         data: MasterChef.bytecode,
-        arguments: [ tokenContractAddress, account.address, account.address, saltPerBlock, 6347879 ]
+        arguments: [tokenContractAddress, account.address, account.address, saltPerBlock, 6347879]
     })
-    .send({
-        nonce: web3.utils.toHex(nonce++),
-        from: mainAccount.address,
-        gas: web3.utils.toHex(config.gasLimit),
-        gasPrice: web3.utils.toHex(config.gasPrice),
-    })
-    .then((newContractInstance) => {
-        console.log(`MasterChef contract deployed at ${newContractInstance.options.address}`);
+        .send({
+            nonce: web3.utils.toHex(nonce++),
+            from: mainAccount.address,
+            gas: web3.utils.toHex(config.gasLimit),
+            gasPrice: web3.utils.toHex(config.gasPrice),
+        })
+        .then((newContractInstance) => {
+            console.log(`MasterChef contract deployed at ${newContractInstance.options.address}`);
 
-        // SALT 4x 0% deposit fee
-        add(newContractInstance.options.address, 4000, tokenContractAddress, 0, true, account, nonce++);
+            // SALT 4x 0% deposit fee
+            add(newContractInstance.options.address, 4000, tokenContractAddress, 0, true, account, nonce++);
 
-        // unpause(newContractInstance.options.address, account, ++nonce);
-        // deployCrowdsaleContract(newContractInstance.options.address, account, nonce++);
-    });
+            // unpause(newContractInstance.options.address, account, ++nonce);
+            // deployCrowdsaleContract(newContractInstance.options.address, account, nonce++);
+        });
 }
 
 async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, withUpdate, account, nonce) {
@@ -92,24 +92,26 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
     const txOptions = {
         nonce: web3.utils.toHex(nonce),
         from: mainAccount.address,
-        to: masterChefAddress,  
+        to: masterChefAddress,
         gas: web3.utils.toHex(config.gasLimit),
         gasPrice: web3.utils.toHex(config.gasPrice),
         data: MasterChefContract.methods.add(allocPoint, lpTokenAddress, depositFee, withUpdate).encodeABI()
     }
-    const signed  = await web3.eth.accounts.signTransaction(txOptions, account.privateKey);
+    const signed = await web3.eth.accounts.signTransaction(txOptions, account.privateKey);
     web3.eth.sendSignedTransaction(signed.rawTransaction)
-    .on('error', function(err) {
-        console.log('error', err);
-    })
-    .on('transactionHash', function(transactionHash) {
-        console.log('transactionHash', transactionHash);
-    })
-    .on('receipt', function(receipt) {
-        var transactionHash = receipt.transactionHash;
-        console.log('receipt', receipt);
-    });
+        .on('error', function (err) {
+            console.log('error', err);
+        })
+        .on('transactionHash', function (transactionHash) {
+            console.log('transactionHash', transactionHash);
+        })
+        .on('receipt', function (receipt) {
+            var transactionHash = receipt.transactionHash;
+            console.log('receipt', receipt);
+        });
 }
+
+setupSmartChef()
 
 async function setupSmartChef() {
     const privateKey = mainAccount.privateKey
@@ -118,56 +120,88 @@ async function setupSmartChef() {
     web3.eth.defaultAccount = account.address;
 
     let nonce = await web3.eth.getTransactionCount(account.address);
-    console.log("nonce:",nonce);
+    console.log("nonce:", nonce);
 
     const SALTaddress = "0x89dcddca577f3658a451775d58ea99da532263c8"
     const aRandomTokenToEarn = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee" // BUSD
-    const rewardAmount = 0.01
-    deploySmartChef(SALTaddress, aRandomTokenToEarn, rewardAmount, account, nonce);
+    const rewardAmount = web3.utils.toWei('0.1', 'ether');
+    const rewardPerBlock = web3.utils.toWei('0.0001', 'ether');
+    deploySmartChef(SALTaddress, aRandomTokenToEarn, rewardAmount, rewardPerBlock, account, nonce);
 }
 
-// setupSmartChef()
-
-async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, account, nonce) {
-    const rewardPerBlock = web3.utils.toWei('0.0001', 'ether');
+async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, rewardPerBlock, account, nonce) {
     const startBlock = 6572920
     const endBlock = 6671920
-    console.log("gaslimit,",config.gasLimit)
-    console.log("gasPrice,",config.gasPrice)
+    console.log("gaslimit,", config.gasLimit)
+    console.log("gasPrice,", config.gasPrice)
 
+    // deploy a new SALT Token
     TokenContract.deploy({
         data: Token.bytecode,
     })
-    .send({
-        nonce: web3.utils.toHex(nonce++),
-        from: mainAccount.address,
-        gas: web3.utils.toHex(config.gasLimit),
-        gasPrice: web3.utils.toHex(config.gasPrice),
-    })
-    .then((saltContractAddress) => {
-        console.log(`Token contract deployed at ${saltContractAddress.options.address}`);
+        .send({
+            nonce: web3.utils.toHex(nonce++),
+            from: mainAccount.address,
+            gas: web3.utils.toHex(config.gasLimit),
+            gasPrice: web3.utils.toHex(config.gasPrice),
+        })
+        .then((saltContractAddress) => {
+            console.log(`Token contract deployed at ${saltContractAddress.options.address}`);
 
+            // deploy SmartChef
             SmartChefContract.deploy({
                 data: SmartChef.bytecode,
-                arguments: [ saltContractAddress.options.address, rewardTokenAddress, rewardPerBlock, startBlock, endBlock ]
+                arguments: [saltContractAddress.options.address, rewardTokenAddress, rewardPerBlock, startBlock, endBlock]
             })
-            .send({
-                nonce: web3.utils.toHex(nonce++),
-                from: account.address,
-                gas: web3.utils.toHex(config.gasLimit),
-                gasPrice: web3.utils.toHex(config.gasPrice),
-            })
-            .then((newContractInstance) => {
-                console.log(`SmartChef contract deployed at ${newContractInstance.options.address}`);
+                .send({
+                    nonce: web3.utils.toHex(nonce++),
+                    from: account.address,
+                    gas: web3.utils.toHex(config.gasLimit),
+                    gasPrice: web3.utils.toHex(config.gasPrice),
+                })
+                .then((newContractInstance) => {
+                    console.log(`SmartChef contract deployed at ${newContractInstance.options.address}`);
+                    // now we need to deposit rewardTokenAddress
+                    sendRewardTokenToSmartChef(newContractInstance.options.address, rewardTokenAddress, rewardAmount)
+                });
 
-                saltContractAddress.approve(newContractInstance.options.address, 100000000000000000)
-                // now we need to deposit rewardTokenAddress
-                saltContractAddress.safeTransferFrom(rewardTokenAddress, newContractInstance, rewardAmount)
-
-            });
-
-});
+        });
 }
+
+async function sendRewardTokenToSmartChef(smartChef, rewardToken, amountToSend) {
+    const privateKey = mainAccount.privateKey
+    const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
+    web3.eth.accounts.wallet.add(account);
+    web3.eth.defaultAccount = account.address;
+
+    let nonce = await web3.eth.getTransactionCount(account.address);
+    console.log("nonce:", nonce);
+
+    // send to smartchef the reward token
+    const txOptions2 = {
+        nonce: web3.utils.toHex(nonce),
+        from: mainAccount.address,
+        to: rewardToken,
+        gas: web3.utils.toHex(config.gasLimit),
+        gasPrice: web3.utils.toHex(config.gasPrice),
+        data: TokenContract.methods.transfer(smartChef, amountToSend).encodeABI()
+    }
+    const signed2 = await web3.eth.accounts.signTransaction(txOptions2, account.privateKey);
+    web3.eth.sendSignedTransaction(signed2.rawTransaction)
+        .on('error', function (err) {
+            console.log('error', err);
+        })
+        .on('transactionHash', function (transactionHash) {
+            console.log('reward token sent to SmartChef: ', amountToSend);
+            console.log('transactionHash', transactionHash);
+        })
+        .on('receipt', function (receipt) {
+            var transactionHash = receipt.transactionHash;
+            console.log('receipt', receipt);
+        });
+}
+
+// startSmartFarming()
 
 async function startSmartFarming() {
     const privateKey = mainAccount.privateKey
@@ -176,56 +210,66 @@ async function startSmartFarming() {
     web3.eth.defaultAccount = account.address;
 
     let nonce = await web3.eth.getTransactionCount(account.address);
-    console.log("nonce:",nonce);
+    console.log("nonce:", nonce);
 
-    const SALTaddress = "0x4C5369BDE459Df5E57bB992544dA5e8F95a25EC1"
-    const aRandomTokenToEarn = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee" // BUSD
-    const smartChef = "0x3B88780Abfb5A913EB68e16729d46E3463bE9904"
+    const SALTaddress = "0xc5FBD907201227BB09E6cDb0187dfc8b31A67ec9"
+    const smartChef = "0x00f5648F6965DfD922b38670727f890645ab6623"
 
+    const approvedAmount = web3.utils.toWei('100000', 'ether');
     // Approve smartchef to get SALT
     const txOptions = {
         nonce: web3.utils.toHex(nonce),
         from: mainAccount.address,
-        to: SALTaddress,  
+        to: SALTaddress,
         gas: web3.utils.toHex(config.gasLimit),
         gasPrice: web3.utils.toHex(config.gasPrice),
-        data: TokenContract.methods.approve(smartChef, 100000000000).encodeABI()
+        data: TokenContract.methods.approve(smartChef, approvedAmount).encodeABI()
     }
-    const signed  = await web3.eth.accounts.signTransaction(txOptions, account.privateKey);
+    const signed = await web3.eth.accounts.signTransaction(txOptions, account.privateKey);
     web3.eth.sendSignedTransaction(signed.rawTransaction)
-    .on('error', function(err) {
-        console.log('error', err);
-    })
-    .on('transactionHash', function(transactionHash) {
-        console.log('transactionHash', transactionHash);
-    })
-    .on('receipt', function(receipt) {
-        var transactionHash = receipt.transactionHash;
-        console.log('receipt', receipt);
-    });
+        .on('error', function (err) {
+            console.log('error', err);
+        })
+        .on('transactionHash', function (transactionHash) {
+            console.log('transactionHash', transactionHash);
+        })
+        .on('receipt', function (receipt) {
+            var transactionHash = receipt.transactionHash;
+            console.log('receipt', receipt);
+            depositSaltToSmartChef(smartChef)
+        });
+ }
 
-    // send to smartchef the reward token
-    const BUSDtoSend = web3.utils.toWei('1', 'ether');
+async function depositSaltToSmartChef(smartChef) {
+    const privateKey = mainAccount.privateKey
+    const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
+    web3.eth.accounts.wallet.add(account);
+    web3.eth.defaultAccount = account.address;
+
+    let nonce = await web3.eth.getTransactionCount(account.address);
+    console.log("nonce:", nonce);
+
+    // deposit SALT to smartchef
+    const SALTtoSend = web3.utils.toWei('2', 'ether');
     const txOptions2 = {
-        nonce: web3.utils.toHex(nonce+1),
+        nonce: web3.utils.toHex(nonce),
         from: mainAccount.address,
-        to: aRandomTokenToEarn,  
+        to: smartChef,
         gas: web3.utils.toHex(config.gasLimit),
         gasPrice: web3.utils.toHex(config.gasPrice),
-        data: TokenContract.methods.transfer(smartChef, BUSDtoSend).encodeABI()
+        data: SmartChefContract.methods.deposit(SALTtoSend).encodeABI()
     }
-    const signed2  = await web3.eth.accounts.signTransaction(txOptions2, account.privateKey);
+    const signed2 = await web3.eth.accounts.signTransaction(txOptions2, account.privateKey);
     web3.eth.sendSignedTransaction(signed2.rawTransaction)
-    .on('error', function(err) {
-        console.log('error', err);
-    })
-    .on('transactionHash', function(transactionHash) {
-        console.log('transactionHash', transactionHash);
-    })
-    .on('receipt', function(receipt) {
-        var transactionHash = receipt.transactionHash;
-        console.log('receipt', receipt);
-    });
+        .on('error', function (err) {
+            console.log('error', err);
+        })
+        .on('transactionHash', function (transactionHash) {
+            console.log('transactionHash', transactionHash);
+        })
+        .on('receipt', function (receipt) {
+            var transactionHash = receipt.transactionHash;
+            console.log('receipt', receipt);
+        });
 
 }
-startSmartFarming()
