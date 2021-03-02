@@ -48,7 +48,7 @@ contract ModSalary is Ownable {
         if (reward > 0) {
             UserInfo storage user = userInfo[msg.sender];
             user.lastBlockClaim = block.number;
-            paymentToken.safeTransferFrom(address(msg.sender), address(this), reward);
+            paymentToken.transfer(address(msg.sender), reward);
             emit Claim(msg.sender, reward);     
         }
     }
@@ -62,7 +62,6 @@ contract ModSalary is Ownable {
 
     // Withdraw reward. EMERGENCY ONLY.
     function emergencyPaymentWithdraw(uint256 _amount) public onlyOwner {
-        require(_amount <= paymentToken.balanceOf(address(this)), 'not enough token');
         paymentToken.safeTransfer(address(msg.sender), _amount);
     }
 
