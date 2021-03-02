@@ -53,7 +53,7 @@ contract ModSalary is Ownable {
         }
     }
 
-    function addMod(address _mod, _claimPerBlock) public onlyOwner {
+    function addMod(address _mod, uint256 _claimPerBlock) public onlyOwner {
         UserInfo storage user = userInfo[_mod];
         user.lastBlockClaim = block.number;
         user.claimPerBlock = _claimPerBlock
