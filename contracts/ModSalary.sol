@@ -25,22 +25,9 @@ contract ModSalary is Ownable {
     event AddMod(address indexed user, uint256 claimPerBlock);
 
     constructor(
-        IBEP20 _paymentToken,
+        IBEP20 _paymentToken
     ) public {
         paymentToken = _paymentToken;
-    }
-
-    // View function to see pending Reward on frontend.
-    function pendingReward(address _user) external view returns (uint256) {
-        UserInfo storage user = userInfo[_user];
-        uint256 claimableBlocks = block.number - user.lastBlockClaim;
-        uint256 claimablePayment = claimableBlocks.mul(user.claimPerBlock)
-        
-        uint256 supply = paymentToken.balanceOf(address(this));
-        if (claimableBlocks > 0 && supply > 0) {
-            return claimablePayment;
-        } 
-        return 0
     }
 
     function claim() public {
@@ -53,11 +40,24 @@ contract ModSalary is Ownable {
         }
     }
 
+    // View function to see pending Reward on frontend.
+    function pendingReward(address _user) external view returns (uint256) {
+        UserInfo storage user = userInfo[_user];
+        uint256 claimableBlocks = block.number - user.lastBlockClaim;
+        uint256 claimablePayment = claimableBlocks.mul(user.claimPerBlock);
+        
+        uint256 supply = paymentToken.balanceOf(address(this));
+        if (claimableBlocks > 0) {
+            return claimablePayment;
+        } 
+        return 0;
+    }
+
     function addMod(address _mod, uint256 _claimPerBlock) public onlyOwner {
         UserInfo storage user = userInfo[_mod];
         user.lastBlockClaim = block.number;
-        user.claimPerBlock = _claimPerBlock
-        emit Deposit(_mod, _claimPerBlock);
+        user.claimPerBlock = _claimPerBlock;
+        emit AddMod(_mod, _claimPerBlock);
     }
 
     // Withdraw reward. EMERGENCY ONLY.
