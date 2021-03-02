@@ -18,16 +18,20 @@ contract ModSalary is Ownable {
     // SALT TOKEN
     IBEP20 public paymentToken;
 
+    uint256 public endBlock;
+
     // Info of each mod
     mapping (address => UserInfo) public userInfo;
 
     event Claim(address indexed user, uint256 amount);
     event AddMod(address indexed user, uint256 claimPerBlock);
+    event RemoveMod(address indexed user);
 
     constructor(
         IBEP20 _paymentToken
     ) public {
         paymentToken = _paymentToken;
+        endBlock = 1115342314;
     }
 
     function claim() public {
@@ -41,12 +45,11 @@ contract ModSalary is Ownable {
     }
 
     // View function to see pending Reward on frontend.
-    function pendingReward(address _user) external view returns (uint256) {
+    function pendingReward(address _user) public view returns (uint256) {
         UserInfo storage user = userInfo[_user];
-        uint256 claimableBlocks = block.number - user.lastBlockClaim;
+        uint256 claimableBlocks = min(block.number, endBlock) - user.lastBlockClaim;
         uint256 claimablePayment = claimableBlocks.mul(user.claimPerBlock);
         
-        uint256 supply = paymentToken.balanceOf(address(this));
         if (claimableBlocks > 0) {
             return claimablePayment;
         } 
@@ -60,9 +63,29 @@ contract ModSalary is Ownable {
         emit AddMod(_mod, _claimPerBlock);
     }
 
+    function removeMod(address _mod) public onlyOwner {
+        delete userInfo[_mod];
+        emit RemoveMod(_mod);
+    }
+
+    function setEndBlock(uint256 _block) public onlyOwner {
+        if (_block == 0) {
+            endBlock = block.number;
+        } else {
+            endBlock = _block;
+        }
+    }
+
     // Withdraw reward. EMERGENCY ONLY.
     function emergencyPaymentWithdraw(uint256 _amount) public onlyOwner {
         paymentToken.safeTransfer(address(msg.sender), _amount);
+    }
+
+     /**
+     * @dev Returns the smallest of two numbers.
+     */
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a < b ? a : b;
     }
 
 }
