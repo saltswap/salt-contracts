@@ -4,32 +4,45 @@ const EthereumTx = require('ethereumjs-tx').Transaction;
 const Token = require('./build/contracts//SaltToken.json');
 const MasterChef = require('./build/contracts//MasterChef.json');
 const SmartChef = require('./build/contracts//SmartChef.json');
+const ModSalary = require('./build/contracts//ModSalary.json');
 // const IERC20 = require('@openzeppelin/contracts/build/contracts/IERC20.json');
 
 const config = require('./config-deploy.json');
 require('dotenv').config();
 
+// Export flat:
+// npx truffle-flattener contracts/ModSalary.sol > FlatModSalary.sol
+
 const mainAccount = {
     address: process.env.address,
-    privateKey: process.env.privateKey
+    privateKey: process.env.privateKey,
+    web3: new Web3(new Web3.providers.HttpProvider(`https://bsc-dataseed.binance.org/`))
+}
+
+const testAccount = {
+    address: process.env.addressTest,
+    privateKey: process.env.privateKeyTest,
+    web3: new Web3(new Web3.providers.HttpProvider(`https://data-seed-prebsc-2-s1.binance.org:8545/`))
 }
 
 // Setup web3
 const INFURA_API_KEY = config.infuraApiKey;
 const NETWORK_ID = config.networkId;
 
- const web3 = new Web3(new Web3.providers.HttpProvider(`https://bsc-dataseed.binance.org/`));
-//const web3 = new Web3(new Web3.providers.HttpProvider(`https://data-seed-prebsc-2-s1.binance.org:8545/`));
+const web3 = testAccount.web3
 
 const TokenContract = new web3.eth.Contract(Token.abi);
 const MasterChefContract = new web3.eth.Contract(MasterChef.abi);
 const SmartChefContract = new web3.eth.Contract(SmartChef.abi);
+const ModSalaryContract = new web3.eth.Contract(ModSalary.abi);
 // const ERC20 = new web3.eth.Contract(IERC20.abi);
 
 // setup();
 
 async function setup() {
-    const privateKey = mainAccount.privateKey;
+    const accountData = mainAccount
+    const web3 = accountData.web3
+    const privateKey = accountData.privateKey
     const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
     web3.eth.accounts.wallet.add(account);
     web3.eth.defaultAccount = account.address;
@@ -39,7 +52,7 @@ async function setup() {
     let balance = await web3.eth.getBalance(mainAccount.address);
     console.log(balance);
 
-    deployTokenContract(account, nonce);
+    deployTokenContract(accountData, nonce);
 }
 
 async function deployTokenContract(account, nonce) {
@@ -48,7 +61,7 @@ async function deployTokenContract(account, nonce) {
     })
         .send({
             nonce: web3.utils.toHex(nonce++),
-            from: mainAccount.address,
+            from: account.address,
             gas: web3.utils.toHex(config.gasLimit),
             gasPrice: web3.utils.toHex(config.gasPrice),
         })
@@ -56,11 +69,12 @@ async function deployTokenContract(account, nonce) {
             console.log(`Token contract deployed at ${newContractInstance.options.address}`);
             // setUniswapPool(newContractInstance.options.address, account, ++nonce);
             // unpause(newContractInstance.options.address, account, ++nonce);
-            deployMasterChef(newContractInstance.options.address, account, nonce);
+            deployMasterChef(newContractInstance.options.address, account.address, nonce);
         });
 }
 
 async function deployMasterChef(tokenContractAddress, account, nonce) {
+    const web3 = account.web3
     const saltPerBlock = web3.utils.toWei('1', 'ether');
 
     MasterChefContract.deploy({
@@ -69,7 +83,7 @@ async function deployMasterChef(tokenContractAddress, account, nonce) {
     })
         .send({
             nonce: web3.utils.toHex(nonce++),
-            from: mainAccount.address,
+            from: accountData.address,
             gas: web3.utils.toHex(config.gasLimit),
             gasPrice: web3.utils.toHex(config.gasPrice),
         })
@@ -85,10 +99,11 @@ async function deployMasterChef(tokenContractAddress, account, nonce) {
 }
 
 async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, withUpdate, account, nonce) {
+    const web3 = account.web3
     // function add(uint256 _allocPoint, IBEP20 _lpToken, uint16 _depositFeeBP, bool _withUpdate) public onlyOwner {
     const txOptions = {
         nonce: web3.utils.toHex(nonce),
-        from: mainAccount.address,
+        from: account.address,
         to: masterChefAddress,
         gas: web3.utils.toHex(config.gasLimit),
         gasPrice: web3.utils.toHex(config.gasPrice),
@@ -111,7 +126,9 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
  // setupSmartChef()
 
 async function setupSmartChef() {
-    const privateKey = mainAccount.privateKey
+    const accountData = mainAccount
+    const web3 = accountData.web3
+    const privateKey = accountData.privateKey
     const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
     web3.eth.accounts.wallet.add(account);
     web3.eth.defaultAccount = account.address;
@@ -168,7 +185,9 @@ async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardA
 }
 
 async function sendRewardTokenToSmartChef(smartChef, rewardToken, amountToSend) {
-    const privateKey = mainAccount.privateKey
+    const accountData = mainAccount
+    const web3 = accountData.web3
+    const privateKey = accountData.privateKey
     const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
     web3.eth.accounts.wallet.add(account);
     web3.eth.defaultAccount = account.address;
@@ -179,7 +198,7 @@ async function sendRewardTokenToSmartChef(smartChef, rewardToken, amountToSend) 
     // send to smartchef the reward token
     const txOptions2 = {
         nonce: web3.utils.toHex(nonce),
-        from: mainAccount.address,
+        from: accountData.address,
         to: rewardToken,
         gas: web3.utils.toHex(config.gasLimit),
         gasPrice: web3.utils.toHex(config.gasPrice),
@@ -203,7 +222,9 @@ async function sendRewardTokenToSmartChef(smartChef, rewardToken, amountToSend) 
  // startSmartFarming()
 
 async function startSmartFarming() {
-    const privateKey = mainAccount.privateKey
+    const accountData = mainAccount
+    const web3 = accountData.web3
+    const privateKey = accountData.privateKey
     const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
     web3.eth.accounts.wallet.add(account);
     web3.eth.defaultAccount = account.address;
@@ -240,7 +261,9 @@ async function startSmartFarming() {
 }
 
 async function depositSaltToSmartChef(smartChef) {
-    const privateKey = mainAccount.privateKey
+    const accountData = mainAccount
+    const web3 = accountData.web3
+    const privateKey = accountData.privateKey
     const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
     web3.eth.accounts.wallet.add(account);
     web3.eth.defaultAccount = account.address;
@@ -271,4 +294,40 @@ async function depositSaltToSmartChef(smartChef) {
             console.log('receipt', receipt);
         });
 
+}
+
+
+  setupModSalary()
+
+ async function setupModSalary() {
+    const accountData = testAccount
+    const web3 = accountData.web3
+    const privateKey = accountData.privateKey
+    const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
+    web3.eth.accounts.wallet.add(account);
+    web3.eth.defaultAccount = account.address;
+
+    let nonce = await web3.eth.getTransactionCount(account.address);
+    console.log("nonce:", nonce);
+
+    const SALTaddress = "0x85582d24455caaf44fc4f914bdca2a6cb73e6681" // test net
+
+    deployModSalary(SALTaddress, account, nonce);
+}
+
+async function deployModSalary(paymentTokenAddress, account, nonce) {
+    // deploy ModSalary
+    ModSalaryContract.deploy({
+        data: ModSalary.bytecode,
+        arguments: [paymentTokenAddress]
+    })
+        .send({
+            nonce: web3.utils.toHex(nonce++),
+            from: account.address,
+            gas: web3.utils.toHex(config.gasLimit),
+            gasPrice: web3.utils.toHex(config.gasPrice),
+        })
+        .then((newContractInstance) => {
+            console.log(`ModSalary contract deployed at ${newContractInstance.options.address}`);
+        });
 }

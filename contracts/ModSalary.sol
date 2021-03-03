@@ -68,6 +68,9 @@ contract ModSalary is Ownable {
         emit RemoveMod(_mod);
     }
 
+    /**
+     * @dev block = 0 sets the current block as the endBlock.
+     */
     function setEndBlock(uint256 _block) public onlyOwner {
         if (_block == 0) {
             endBlock = block.number;
