@@ -43,46 +43,46 @@ contract ModComp is Ownable {
     }
 
     // View function to see pending Reward on frontend.
-    function pendingReward(address _user) public view returns (uint256) {
-        UserInfo storage user = userInfo[_user];
+    function pendingReward(address userAddress) public view returns (uint256) {
+        UserInfo storage user = userInfo[userAddress];
         uint256 claimableBlocks = min(block.number, user.endBlock) - user.lastBlockClaim;
         uint256 claimablePayment = claimableBlocks.mul(user.claimPerBlock);
         return claimablePayment;
     }
 
-    function addMod(address _mod, uint256 _claimPerBlock) public onlyOwner {
-        UserInfo storage user = userInfo[_mod];
+    function addMod(address mod, uint256 claimPerBlock) public onlyOwner {
+        UserInfo storage user = userInfo[mod];
         user.lastBlockClaim = block.number;
-        user.claimPerBlock = _claimPerBlock;
+        user.claimPerBlock = claimPerBlock;
         user.endBlock = 1115342314;
-        emit AddMod(_mod, _claimPerBlock);
+        emit AddMod(mod, claimPerBlock);
     }
 
-    function removeMod(address _mod) public onlyOwner {
-        delete userInfo[_mod];
-        emit RemoveMod(_mod);
+    function removeMod(address mod) public onlyOwner {
+        delete userInfo[mod];
+        emit RemoveMod(mod);
     }
 
-    function updateSalary(address _mod, uint256 _claimPerBlock) public onlyOwner {
-        UserInfo storage user = userInfo[_mod];
-        user.claimPerBlock = _claimPerBlock;
+    function updateCompensation(address mod, uint256 claimPerBlock) public onlyOwner {
+        UserInfo storage user = userInfo[mod];
+        user.claimPerBlock = claimPerBlock;
     }
 
     /**
      * @dev block = 0 sets the current block as the endBlock.
      */
-    function stopSalary(address _mod, uint256 _block) public onlyOwner {
-        UserInfo storage user = userInfo[_mod];
-        if (_block == 0) {
+    function stopCompensation(address mod, uint256 endBlock) public onlyOwner {
+        UserInfo storage user = userInfo[mod];
+        if (endBlock == 0) {
             user.endBlock = block.number;
         } else {
-            user.endBlock = _block;
+            user.endBlock = endBlock;
         }
     }
 
     // Withdraw reward. EMERGENCY ONLY.
-    function emergencyPaymentWithdraw(uint256 _amount) public onlyOwner {
-        paymentToken.safeTransfer(address(msg.sender), _amount);
+    function emergencyPaymentWithdraw(uint256 amount) public onlyOwner {
+        paymentToken.safeTransfer(address(msg.sender), amount);
     }
 
      /**
