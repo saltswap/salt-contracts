@@ -29,7 +29,7 @@ const testAccount = {
 const INFURA_API_KEY = config.infuraApiKey;
 const NETWORK_ID = config.networkId;
 
-const web3 = testAccount.web3
+const web3 = mainAccount.web3
 
 const TokenContract = new web3.eth.Contract(Token.abi);
 const MasterChefContract = new web3.eth.Contract(MasterChef.abi);
@@ -123,7 +123,7 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
         });
 }
 
- // setupSmartChef()
+//  setupSmartChef()
 
 async function setupSmartChef() {
     const accountData = mainAccount
@@ -137,12 +137,12 @@ async function setupSmartChef() {
     console.log("nonce:", nonce);
 
     const SALTaddress = "0x2849b1ae7e04a3d9bc288673a92477cf63f28af4" // main net
-    const rewardToken = "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82" // CAKE
-    const rewardAmount = web3.utils.toWei('1021.756438264728825725', 'ether');
-    const rewardPerBlock = web3.utils.toWei('0.00295', 'ether');
+    const rewardToken = "0xe9e7cea3dedca5984780bafc599bd69add087d56" // BUSD
+    const rewardAmount = web3.utils.toWei('50000', 'ether');
+    const rewardPerBlock = web3.utils.toWei('0.694', 'ether');
+    const startBlock = 5385010
 
-
-     deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce);
+     deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce, startBlock);
 
     // deploy a new SALT Token
     /* TokenContract.deploy({
@@ -160,8 +160,7 @@ async function setupSmartChef() {
         }); */
 }
 
-async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, rewardPerBlock, account, nonce) {
-    const startBlock = 5212526
+async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, rewardPerBlock, account, nonce, startBlock) {
     const endBlock = startBlock + Math.floor(rewardAmount / rewardPerBlock)
     console.log("startblock:", startBlock)
     console.log("endBlock:", endBlock)
@@ -297,10 +296,10 @@ async function depositSaltToSmartChef(smartChef) {
 }
 
 
-  setupModSalary()
+   setupModSalary()
 
  async function setupModSalary() {
-    const accountData = testAccount
+    const accountData = mainAccount
     const web3 = accountData.web3
     const privateKey = accountData.privateKey
     const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
@@ -310,7 +309,7 @@ async function depositSaltToSmartChef(smartChef) {
     let nonce = await web3.eth.getTransactionCount(account.address);
     console.log("nonce:", nonce);
 
-    const SALTaddress = "0x85582d24455caaf44fc4f914bdca2a6cb73e6681" // test net
+    const SALTaddress = "0x2849b1ae7e04a3d9bc288673a92477cf63f28af4" // main net
 
     deployModSalary(SALTaddress, account, nonce);
 }

@@ -13,12 +13,11 @@ contract ModSalary is Ownable {
     struct UserInfo {
         uint256 lastBlockClaim; // last claimed block
         uint256 claimPerBlock; //  block payment
+        uint256 endBlock; // end of salary
     }
 
     // SALT TOKEN
     IBEP20 public paymentToken;
-
-    uint256 public endBlock;
 
     // Info of each mod
     mapping (address => UserInfo) public userInfo;
@@ -31,14 +30,13 @@ contract ModSalary is Ownable {
         IBEP20 _paymentToken
     ) public {
         paymentToken = _paymentToken;
-        endBlock = 1115342314;
     }
 
     function claim() public {
         uint256 reward = pendingReward(msg.sender);
         if (reward > 0) {
             UserInfo storage user = userInfo[msg.sender];
-            user.lastBlockClaim = block.number;
+            user.lastBlockClaim = min(block.number, user.endBlock);
             paymentToken.transfer(address(msg.sender), reward);
             emit Claim(msg.sender, reward);     
         }
@@ -47,7 +45,7 @@ contract ModSalary is Ownable {
     // View function to see pending Reward on frontend.
     function pendingReward(address _user) public view returns (uint256) {
         UserInfo storage user = userInfo[_user];
-        uint256 claimableBlocks = min(block.number, endBlock) - user.lastBlockClaim;
+        uint256 claimableBlocks = min(block.number, user.endBlock) - user.lastBlockClaim;
         uint256 claimablePayment = claimableBlocks.mul(user.claimPerBlock);
         
         if (claimableBlocks > 0) {
@@ -60,6 +58,7 @@ contract ModSalary is Ownable {
         UserInfo storage user = userInfo[_mod];
         user.lastBlockClaim = block.number;
         user.claimPerBlock = _claimPerBlock;
+        user.endBlock = 1115342314;
         emit AddMod(_mod, _claimPerBlock);
     }
 
@@ -68,14 +67,20 @@ contract ModSalary is Ownable {
         emit RemoveMod(_mod);
     }
 
+    function updateSalary(address _mod, uint256 _claimPerBlock) public onlyOwner {
+        UserInfo storage user = userInfo[_mod];
+        user.claimPerBlock = _claimPerBlock;
+    }
+
     /**
      * @dev block = 0 sets the current block as the endBlock.
      */
-    function setEndBlock(uint256 _block) public onlyOwner {
+    function stopSalary(address _mod, uint256 _block) public onlyOwner {
+        UserInfo storage user = userInfo[_mod];
         if (_block == 0) {
-            endBlock = block.number;
+            user.endBlock = block.number;
         } else {
-            endBlock = _block;
+            user.endBlock = _block;
         }
     }
 
