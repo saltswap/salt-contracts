@@ -13,7 +13,7 @@ contract ModComp is Ownable {
     struct UserInfo {
         uint256 lastBlockClaim; // last claimed block
         uint256 claimPerBlock; //  block payment
-        uint256 endBlock; // end of salary
+        uint256 endBlock; // end of compensation
     }
 
     // SALT TOKEN
