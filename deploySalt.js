@@ -4,14 +4,14 @@ const EthereumTx = require('ethereumjs-tx').Transaction;
 const Token = require('./build/contracts//SaltToken.json');
 const MasterChef = require('./build/contracts//MasterChef.json');
 const SmartChef = require('./build/contracts//SmartChef.json');
-const ModSalary = require('./build/contracts//ModSalary.json');
+const ModComp = require('./build/contracts//ModComp.json');
 // const IERC20 = require('@openzeppelin/contracts/build/contracts/IERC20.json');
 
 const config = require('./config-deploy.json');
 require('dotenv').config();
 
 // Export flat:
-// npx truffle-flattener contracts/ModSalary.sol > FlatModSalary.sol
+// npx truffle-flattener contracts/ModComp.sol > ModComp.sol
 
 const mainAccount = {
     address: process.env.address,
@@ -34,7 +34,7 @@ const web3 = mainAccount.web3
 const TokenContract = new web3.eth.Contract(Token.abi);
 const MasterChefContract = new web3.eth.Contract(MasterChef.abi);
 const SmartChefContract = new web3.eth.Contract(SmartChef.abi);
-const ModSalaryContract = new web3.eth.Contract(ModSalary.abi);
+const ModCompContract = new web3.eth.Contract(ModComp.abi);
 // const ERC20 = new web3.eth.Contract(IERC20.abi);
 
 // setup();
@@ -309,15 +309,15 @@ async function depositSaltToSmartChef(smartChef) {
     let nonce = await web3.eth.getTransactionCount(account.address);
     console.log("nonce:", nonce);
 
-    const SALTaddress = "0x2849b1ae7e04a3d9bc288673a92477cf63f28af4" // main net
+    const SALTaddress = "0x2849b1aE7E04A3D9Bc288673A92477CF63F28aF4" // main net
 
     deployModSalary(SALTaddress, account, nonce);
 }
 
 async function deployModSalary(paymentTokenAddress, account, nonce) {
     // deploy ModSalary
-    ModSalaryContract.deploy({
-        data: ModSalary.bytecode,
+    ModCompContract.deploy({
+        data: ModComp.bytecode,
         arguments: [paymentTokenAddress]
     })
         .send({
@@ -327,6 +327,6 @@ async function deployModSalary(paymentTokenAddress, account, nonce) {
             gasPrice: web3.utils.toHex(config.gasPrice),
         })
         .then((newContractInstance) => {
-            console.log(`ModSalary contract deployed at ${newContractInstance.options.address}`);
+            console.log(`ModComp contract deployed at ${newContractInstance.options.address}`);
         });
 }
