@@ -5,7 +5,7 @@ import './libs/IBEP20.sol';
 import './libs/SafeBEP20.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ModSalary is Ownable {
+contract ModComp is Ownable {
     using SafeMath for uint256;
     using SafeBEP20 for IBEP20;
 
@@ -47,11 +47,7 @@ contract ModSalary is Ownable {
         UserInfo storage user = userInfo[_user];
         uint256 claimableBlocks = min(block.number, user.endBlock) - user.lastBlockClaim;
         uint256 claimablePayment = claimableBlocks.mul(user.claimPerBlock);
-        
-        if (claimableBlocks > 0) {
-            return claimablePayment;
-        } 
-        return 0;
+        return claimablePayment;
     }
 
     function addMod(address _mod, uint256 _claimPerBlock) public onlyOwner {
