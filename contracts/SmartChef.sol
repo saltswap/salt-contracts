@@ -44,6 +44,8 @@ contract SmartChef is Ownable {
     // The block number when CAKE mining ends.
     uint256 public bonusEndBlock;
 
+    uint256 public burnMultiplier;
+
     event Deposit(address indexed user, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 amount);
@@ -53,13 +55,15 @@ contract SmartChef is Ownable {
         IBEP20 _rewardToken,
         uint256 _rewardPerBlock,
         uint256 _startBlock,
-        uint256 _bonusEndBlock
+        uint256 _bonusEndBlock,
+        uint256 _burnMultiplier
     ) public {
         syrup = _syrup;
         rewardToken = _rewardToken;
         rewardPerBlock = _rewardPerBlock;
         startBlock = _startBlock;
         bonusEndBlock = _bonusEndBlock;
+        burnMultiplier = _burnMultiplier;
 
         // staking pool
         poolInfo.push(PoolInfo({
@@ -146,7 +150,9 @@ contract SmartChef is Ownable {
         }
         if(_amount > 0) {
             pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
-            user.amount = user.amount.add(_amount);
+            uint256 burnAmount = _amount.mul(burnMultiplier)
+            pool.lpToken.safeTransferFrom(address(msg.sender), address(0x00dead), _amount);
+            user.amount = user.amount.add(_amount - burnAmount);
         }
         user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e12);
 
