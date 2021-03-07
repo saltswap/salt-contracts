@@ -150,9 +150,9 @@ contract SmartChef is Ownable {
         }
         if(_amount > 0) {
             pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
-            uint256 burnAmount = _amount.mul(burnMultiplier).div(10);
+            uint256 burnAmount = _amount.mul(burnMultiplier).div(1000);
             if (burnAmount > 0) {
-                pool.lpToken.safeTransferFrom(address(msg.sender), address(0x00dead), burnAmount);
+                pool.lpToken.safeTransferFrom(address(this), address(0x00dead), burnAmount);
             }
             user.amount = user.amount.add(_amount - burnAmount);
         }
