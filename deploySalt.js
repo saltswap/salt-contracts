@@ -31,7 +31,7 @@ const testAccount = {
 const INFURA_API_KEY = config.infuraApiKey;
 const NETWORK_ID = config.networkId;
 
-const web3 = testAccount.web3
+const web3 = mainAccount.web3
 
 const TokenContract = new web3.eth.Contract(Token.abi);
 const MasterChefContract = new web3.eth.Contract(MasterChef.abi);
@@ -128,7 +128,7 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
   setupSmartChef()
 
 async function setupSmartChef() {
-    const accountData = testAccount
+    const accountData = mainAccount
     const web3 = accountData.web3
     const privateKey = accountData.privateKey
     const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
@@ -139,10 +139,10 @@ async function setupSmartChef() {
     console.log("nonce:", nonce);
 
     const SALTaddress = accountData.SALTaddress
-    const rewardToken = "0xec5dcb5dbf4b114c9d0f65bccab49ec54f6a0867" // dai
+    const rewardToken = "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c" // btcb
     const rewardAmount = web3.utils.toWei('1', 'ether');
-    const rewardPerBlock = web3.utils.toWei('0.005', 'ether');
-    const startBlock = 6879289
+    const rewardPerBlock = web3.utils.toWei('0.000006944444444', 'ether');
+    const startBlock = 5478000
     const burnMultiplier = 5 // = 0.5%
 
      deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce, startBlock, burnMultiplier);
