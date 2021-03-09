@@ -16,13 +16,15 @@ require('dotenv').config();
 const mainAccount = {
     address: process.env.address,
     privateKey: process.env.privateKey,
-    web3: new Web3(new Web3.providers.HttpProvider(`https://bsc-dataseed.binance.org/`))
+    web3: new Web3(new Web3.providers.HttpProvider(`https://bsc-dataseed.binance.org/`)),
+    SALTaddress: "0x2849b1ae7e04a3d9bc288673a92477cf63f28af4"
 }
 
 const testAccount = {
     address: process.env.addressTest,
     privateKey: process.env.privateKeyTest,
-    web3: new Web3(new Web3.providers.HttpProvider(`https://data-seed-prebsc-2-s1.binance.org:8545/`))
+    web3: new Web3(new Web3.providers.HttpProvider(`https://data-seed-prebsc-2-s1.binance.org:8545/`)),
+    SALTaddress: "0xa0286abcdf5ac136cdbea4fecea0f83c093e5107"
 }
 
 // Setup web3
@@ -123,7 +125,7 @@ async function add(masterChefAddress, allocPoint, lpTokenAddress, depositFee, wi
         });
 }
 
-//  setupSmartChef()
+  setupSmartChef()
 
 async function setupSmartChef() {
     const accountData = mainAccount
@@ -136,13 +138,14 @@ async function setupSmartChef() {
     let nonce = await web3.eth.getTransactionCount(account.address);
     console.log("nonce:", nonce);
 
-    const SALTaddress = "0x2849b1ae7e04a3d9bc288673a92477cf63f28af4" // main net
-    const rewardToken = "0xe9e7cea3dedca5984780bafc599bd69add087d56" // BUSD
-    const rewardAmount = web3.utils.toWei('50000', 'ether');
-    const rewardPerBlock = web3.utils.toWei('0.694', 'ether');
-    const startBlock = 5385010
+    const SALTaddress = accountData.SALTaddress
+    const rewardToken = "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c" // btcb
+    const rewardAmount = web3.utils.toWei('1', 'ether');
+    const rewardPerBlock = web3.utils.toWei('0.000006944444444', 'ether');
+    const startBlock = 5478000
+    const burnMultiplier = 5 // = 0.5%
 
-     deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce, startBlock);
+     deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce, startBlock, burnMultiplier);
 
     // deploy a new SALT Token
     /* TokenContract.deploy({
@@ -160,7 +163,7 @@ async function setupSmartChef() {
         }); */
 }
 
-async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, rewardPerBlock, account, nonce, startBlock) {
+async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, rewardPerBlock, account, nonce, startBlock, burnMultiplier) {
     const endBlock = startBlock + Math.floor(rewardAmount / rewardPerBlock)
     console.log("startblock:", startBlock)
     console.log("endBlock:", endBlock)
@@ -168,7 +171,7 @@ async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardA
     // deploy SmartChef
     SmartChefContract.deploy({
         data: SmartChef.bytecode,
-        arguments: [tokenContractAddress, rewardTokenAddress, rewardPerBlock, startBlock, endBlock]
+        arguments: [tokenContractAddress, rewardTokenAddress, rewardPerBlock, startBlock, endBlock, burnMultiplier]
     })
         .send({
             nonce: web3.utils.toHex(nonce++),
@@ -296,7 +299,7 @@ async function depositSaltToSmartChef(smartChef) {
 }
 
 
-   setupModSalary()
+ //  setupModSalary()
 
  async function setupModSalary() {
     const accountData = mainAccount
