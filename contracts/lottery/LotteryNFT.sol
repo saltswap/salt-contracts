@@ -7,22 +7,22 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract LotteryNFT is ERC721, Ownable {
     using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    Counters.Counter private tokenIds;
 
     mapping (uint256 => uint8[4]) public lotteryInfo;
     mapping (uint256 => uint256) public lotteryAmount;
     mapping (uint256 => uint256) public issueIndex;
     mapping (uint256 => bool) public claimInfo;
 
-    constructor() public ERC721("GoldenGoose Lottery Ticket", "GLT") {}
+    constructor() public ERC721("Salt Lottery Ticket", "SLT") {}
 
     function newLotteryItem(address player, uint8[4] memory _lotteryNumbers, uint256 _amount, uint256 _issueIndex)
-        public onlyOwner
+        external onlyOwner
         returns (uint256)
     {
-        _tokenIds.increment();
+        tokenIds.increment();
 
-        uint256 newItemId = _tokenIds.current();
+        uint256 newItemId = tokenIds.current();
         _mint(player, newItemId);
         lotteryInfo[newItemId] = _lotteryNumbers;
         lotteryAmount[newItemId] = _amount;
