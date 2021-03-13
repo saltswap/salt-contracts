@@ -21,16 +21,16 @@ contract SmartChef is Ownable {
     // Info of each pool.
     struct PoolInfo {
         IBEP20 lpToken;           // Address of LP token contract.
-        uint256 allocPoint;       // How many allocation points assigned to this pool. CAKEs to distribute per block.
-        uint256 lastRewardBlock;  // Last block number that CAKEs distribution occurs.
-        uint256 accCakePerShare; // Accumulated CAKEs per share, times 1e18. See below.
+        uint256 allocPoint;       // How many allocation points assigned to this pool. SALTs to distribute per block.
+        uint256 lastRewardBlock;  // Last block number that SALTs distribution occurs.
+        uint256 accCakePerShare; // Accumulated SALTs per share, times 1e18. See below.
     }
 
-    // The CAKE TOKEN!
+    // The SALT TOKEN!
     IBEP20 public syrup;
     IBEP20 public rewardToken;
 
-    // CAKE tokens created per block.
+    // Reward tokens created per block.
     uint256 public rewardPerBlock;
 
     // Info of each pool.
@@ -39,9 +39,9 @@ contract SmartChef is Ownable {
     mapping (address => UserInfo) public userInfo;
     // Total allocation poitns. Must be the sum of all allocation points in all pools.
     uint256 private totalAllocPoint = 0;
-    // The block number when CAKE mining starts.
+    // The block number when Reward mining starts.
     uint256 public startBlock;
-    // The block number when CAKE mining ends.
+    // The block number when Reward mining ends.
     uint256 public bonusEndBlock;
 
     uint256 public burnMultiplier;
@@ -101,8 +101,8 @@ contract SmartChef is Ownable {
     function pendingReward(address _user) external view returns (uint256) {
         PoolInfo storage pool = poolInfo[0];
         UserInfo storage user = userInfo[_user];
-        uint256 accCakePerShare = pool.accCakePerShare; // 0 
-        uint256 lpSupply = pool.lpToken.balanceOf(address(this)); // 500k
+        uint256 accCakePerShare = pool.accCakePerShare;
+        uint256 lpSupply = pool.lpToken.balanceOf(address(this));
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
             uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
             uint256 cakeReward = multiplier.mul(rewardPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
@@ -145,6 +145,7 @@ contract SmartChef is Ownable {
         if (user.amount > 0) {
             uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e18).sub(user.rewardDebt);
             if(pending > 0) {
+                user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e18);
                 rewardToken.safeTransfer(address(msg.sender), pending);
             }
         }
