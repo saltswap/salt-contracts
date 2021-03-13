@@ -1,5 +1,5 @@
 {
-  "name": "saltswap",
+  "name": "@saltswap/contracts",
   "version": "1.0.0",
   "license": "MIT",
   "devDependencies": {

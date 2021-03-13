@@ -1,6 +1,4 @@
-# SaltSwap
-
-https://saltswap.finance
+# SaltSwap Smart Contracts
 
 ```
 npm install
@@ -12,14 +10,24 @@ npm install
 node deploySalt
 ```
 
+## Setup
+`
+vi .env
+`
+`
+address=youraddress
+privateKey=yourprivatekey
+`
+
 ## Deployed Contracts
 
-### BSCTESTNET
+### Binance Smart Chain Testnet
 
-- SaltToken - https://testnet.bscscan.com/address/0xbaa6ecff1d77bbc46625ce753ed5cd0c5d0f8426
+- **SALT** - [0x89dcddca577f3658a451775d58ea99da532263c8](https://testnet.bscscan.com/address/0x89dcddca577f3658a451775d58ea99da532263c8)
+- **MasterChef:** [0xd37441c3adc637e43f96881d8b3898f433269d11](https://bscscan.com/address/0xd37441c3adc637e43f96881d8b3898f433269d11)
 
-### BSCMAINNET
-- CakeToken - https://bscscan.com/token/0xf952fc3ca7325cc27d15885d37117676d25bfda6
-- MasterChef - https://bscscan.com/address/0xe70E9185F5ea7Ba3C5d63705784D8563017f2E57
-- Timelock - https://bscscan.com/address/0x2Ef488DE034567e9B8D312928fD52812A242aB3A
-- MultiCall - 0xE1dDc30f691CA671518090931e3bFC1184BFa4Aa
+### Binance Smart Chain Mainnet
+
+- **SALT:** [0x2849b1aE7E04A3D9Bc288673A92477CF63F28aF4](https://bscscan.com/address/0x2849b1aE7E04A3D9Bc288673A92477CF63F28aF4)
+- **MasterChef:** [0xB4405445fFAcF2B86BC2bD7D1C874AC739265658](https://bscscan.com/address/0xB4405445fFAcF2B86BC2bD7D1C874AC739265658)
+- **Timelock:** [0x3278a9feadf2a461f6e35008e1ca611b64317ac6](https://www.bscscan.com/address/0x3278a9feadf2a461f6e35008e1ca611b64317ac6) (delay: 24h)

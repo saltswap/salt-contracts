@@ -3,10 +3,10 @@ pragma solidity 0.6.12;
 import "./libs/BEP20.sol";
 
 // SaltToken with Governance.
-contract SaltToken is BEP20('Salt bae', 'SALT') {
+contract SaltToken is BEP20('Salt TEST', 'SALT') {
 
     constructor() public {
-        _mint(msg.sender, 1e18);
+        _mint(msg.sender, 10e18);
     }
 
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
