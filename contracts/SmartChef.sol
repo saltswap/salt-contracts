@@ -23,7 +23,7 @@ contract SmartChef is Ownable {
         IBEP20 lpToken;           // Address of LP token contract.
         uint256 allocPoint;       // How many allocation points assigned to this pool. CAKEs to distribute per block.
         uint256 lastRewardBlock;  // Last block number that CAKEs distribution occurs.
-        uint256 accCakePerShare; // Accumulated CAKEs per share, times 1e12. See below.
+        uint256 accCakePerShare; // Accumulated CAKEs per share, times 1e18. See below.
     }
 
     // The CAKE TOKEN!
@@ -101,14 +101,14 @@ contract SmartChef is Ownable {
     function pendingReward(address _user) external view returns (uint256) {
         PoolInfo storage pool = poolInfo[0];
         UserInfo storage user = userInfo[_user];
-        uint256 accCakePerShare = pool.accCakePerShare;
-        uint256 lpSupply = pool.lpToken.balanceOf(address(this));
+        uint256 accCakePerShare = pool.accCakePerShare; // 0 
+        uint256 lpSupply = pool.lpToken.balanceOf(address(this)); // 500k
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
             uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
             uint256 cakeReward = multiplier.mul(rewardPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-            accCakePerShare = accCakePerShare.add(cakeReward.mul(1e12).div(lpSupply));
+            accCakePerShare = accCakePerShare.add(cakeReward.mul(1e18).div(lpSupply));
         }
-        return user.amount.mul(accCakePerShare).div(1e12).sub(user.rewardDebt);
+        return user.amount.mul(accCakePerShare).div(1e18).sub(user.rewardDebt);
     }
 
     // Update reward variables of the given pool to be up-to-date.
@@ -124,7 +124,7 @@ contract SmartChef is Ownable {
         }
         uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
         uint256 cakeReward = multiplier.mul(rewardPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-        pool.accCakePerShare = pool.accCakePerShare.add(cakeReward.mul(1e12).div(lpSupply));
+        pool.accCakePerShare = pool.accCakePerShare.add(cakeReward.mul(1e18).div(lpSupply));
         pool.lastRewardBlock = block.number;
     }
 
@@ -143,7 +143,7 @@ contract SmartChef is Ownable {
         UserInfo storage user = userInfo[msg.sender];
         updatePool(0);
         if (user.amount > 0) {
-            uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e12).sub(user.rewardDebt);
+            uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e18).sub(user.rewardDebt);
             if(pending > 0) {
                 rewardToken.safeTransfer(address(msg.sender), pending);
             }
@@ -156,7 +156,7 @@ contract SmartChef is Ownable {
             }
             user.amount = user.amount.add(_amount - burnAmount);
         }
-        user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e12);
+        user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e18);
 
         emit Deposit(msg.sender, _amount);
     }
@@ -167,7 +167,7 @@ contract SmartChef is Ownable {
         UserInfo storage user = userInfo[msg.sender];
         require(user.amount >= _amount, "withdraw: not good");
         updatePool(0);
-        uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e12).sub(user.rewardDebt);
+        uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e18).sub(user.rewardDebt);
         if(pending > 0) {
             rewardToken.safeTransfer(address(msg.sender), pending);
         }
@@ -175,7 +175,7 @@ contract SmartChef is Ownable {
             user.amount = user.amount.sub(_amount);
             pool.lpToken.safeTransfer(address(msg.sender), _amount);
         }
-        user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e12);
+        user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e18);
 
         emit Withdraw(msg.sender, _amount);
     }
@@ -192,7 +192,7 @@ contract SmartChef is Ownable {
 
     // Withdraw reward. EMERGENCY ONLY.
     function emergencyRewardWithdraw(uint256 _amount) public onlyOwner {
-        require(_amount < rewardToken.balanceOf(address(this)), 'not enough token');
+        require(_amount <= rewardToken.balanceOf(address(this)), 'not enough token');
         rewardToken.safeTransfer(address(msg.sender), _amount);
     }
 
