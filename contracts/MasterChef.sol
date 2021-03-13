@@ -69,7 +69,7 @@ contract MasterChef is Ownable {
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event SetDevAddress(address indexed user, address indexed _feeAddress);
+    event SetDevAddress(address indexed user, address indexed _devAddress);
     event SetFeeAddress(address indexed user, address indexed _feeAddress);
     event UpdateEmissionRate(address indexed user, uint256 indexed _saltPerBlock);
 
