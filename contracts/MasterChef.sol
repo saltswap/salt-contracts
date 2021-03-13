@@ -224,9 +224,9 @@ contract MasterChef is Ownable {
     function safeSaltTransfer(address _to, uint256 _amount) internal {
         uint256 saltBal = salt.balanceOf(address(this));
         if (_amount > saltBal) {
-            salt.safeTransfer(_to, saltBal);
+            salt.transfer(_to, saltBal);
         } else {
-            salt.safeTransfer(_to, _amount);
+            salt.transfer(_to, _amount);
         }
     }
 
