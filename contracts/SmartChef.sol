@@ -21,8 +21,8 @@ contract SmartChef is Ownable {
     // Info of each pool.
     struct PoolInfo {
         IBEP20 lpToken;           // Address of LP token contract.
-        uint256 allocPoint;       // How many allocation points assigned to this pool. SALTs to distribute per block.
-        uint256 lastRewardBlock;  // Last block number that SALTs distribution occurs.
+        uint256 allocPoint;       // How many allocation points assigned to this pool. Rewards to distribute per block.
+        uint256 lastRewardBlock;  // Last block number that Rewards distribution occurs.
         uint256 accRewardPerShare; // Accumulated Rewards per share, times 1e18. See below.
     }
 
