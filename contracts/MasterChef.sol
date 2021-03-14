@@ -69,6 +69,9 @@ contract MasterChef is Ownable {
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
+    event SetDevAddress(address indexed user, address indexed _devAddress);
+    event SetFeeAddress(address indexed user, address indexed _feeAddress);
+    event UpdateEmissionRate(address indexed user, uint256 indexed _saltPerBlock);
 
     constructor(
         SaltToken _salt,
@@ -178,8 +181,8 @@ contract MasterChef is Ownable {
             pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
             if(pool.depositFeeBP > 0){
                 uint256 depositFee = _amount.mul(pool.depositFeeBP).div(10000);
-                pool.lpToken.safeTransfer(feeAddress, depositFee);
                 user.amount = user.amount.add(_amount).sub(depositFee);
+                pool.lpToken.safeTransfer(feeAddress, depositFee);
             }else{
                 user.amount = user.amount.add(_amount);
             }
@@ -229,18 +232,23 @@ contract MasterChef is Ownable {
 
     // Update dev address by the previous dev.
     function dev(address _devaddr) public {
+        require(_devaddr != address(0), "dev: invalid address");
         require(msg.sender == devaddr, "dev: wut?");
         devaddr = _devaddr;
+        emit SetDevAddress(msg.sender, _devaddr);
     }
 
     function setFeeAddress(address _feeAddress) public{
+        require(_feeAddress != address(0), "setFeeAddress: invalid address");
         require(msg.sender == feeAddress, "setFeeAddress: FORBIDDEN");
         feeAddress = _feeAddress;
+        emit SetFeeAddress(msg.sender, _feeAddress);
     }
 
     //Pancake has to add hidden dummy pools inorder to alter the emission, here we make it simple and transparent to all.
     function updateEmissionRate(uint256 _saltPerBlock) public onlyOwner {
         massUpdatePools();
         saltPerBlock = _saltPerBlock;
+        emit UpdateEmissionRate(msg.sender, _saltPerBlock);
     }
 }
