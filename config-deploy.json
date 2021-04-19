@@ -1,5 +1,5 @@
 {
-    "networkId": 97,
-    "gasLimit" : 9010204,
-    "gasPrice": 40000000050
+    "networkId": 56,
+    "gasLimit" : 3000000,
+    "gasPrice":  5000000000
 }
