@@ -138,14 +138,24 @@ async function setupSmartChef() {
     let nonce = await web3.eth.getTransactionCount(account.address);
     console.log("nonce:", nonce);
 
-    const SALTaddress = accountData.SALTaddress
-    const rewardToken = "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c" // btcb
-    const rewardAmount = web3.utils.toWei('1', 'ether');
-    const rewardPerBlock = web3.utils.toWei('0.000006944444444', 'ether');
-    const startBlock = 5478000
-    const burnMultiplier = 5 // = 0.5%
+    const SALTaddress = "0x2849b1aE7E04A3D9Bc288673A92477CF63F28aF4" // SALT
+    const rewardToken = "0xa8c514d991f59bab02d32b68f04204cb89261c88" // SAFEP (Change this)
+    const decimals = 8 // (Change this)
+    const daysToRun = web3.utils.toBN(60)
+    const tokens = web3.utils.toBN(10000000)
+    const rewardAmount = tokens.mul(web3.utils.toBN(10**decimals))
+    const rewardPerBlock = rewardAmount.div(daysToRun).div(web3.utils.toBN(28800))
+    const startBlock = 6706800 // (Change this)
+    const endBlock = startBlock + Math.floor(rewardAmount / rewardPerBlock)
+    const burnMultiplier = 1 // = 1.0% (Change this)
+    
+    console.log("startblock:", startBlock)
+    console.log("endBlock:", endBlock)
+    console.log("rewardAmount", rewardAmount.toString())
+    console.log("rewardPerBlock", rewardPerBlock.toString())
+    console.log("burnMultiplier:", burnMultiplier/10)
 
-     deploySmartChef(SALTaddress, rewardToken, rewardAmount, rewardPerBlock, account, nonce, startBlock, burnMultiplier);
+    deploySmartChef(SALTaddress, rewardToken, rewardAmount.toString(), rewardPerBlock.toString(), account, nonce, startBlock, burnMultiplier, endBlock);
 
     // deploy a new SALT Token
     /* TokenContract.deploy({
@@ -163,17 +173,14 @@ async function setupSmartChef() {
         }); */
 }
 
-async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, rewardPerBlock, account, nonce, startBlock, burnMultiplier) {
-    const endBlock = startBlock + Math.floor(rewardAmount / rewardPerBlock)
-    console.log("startblock:", startBlock)
-    console.log("endBlock:", endBlock)
+async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardAmount, rewardPerBlock, account, nonce, startBlock, burnMultiplier, endBlock) {
 
     // deploy SmartChef
     SmartChefContract.deploy({
         data: SmartChef.bytecode,
         arguments: [tokenContractAddress, rewardTokenAddress, rewardPerBlock, startBlock, endBlock, burnMultiplier]
     })
-        .send({
+       .send({
             nonce: web3.utils.toHex(nonce++),
             from: account.address,
             gas: web3.utils.toHex(config.gasLimit),
@@ -182,7 +189,7 @@ async function deploySmartChef(tokenContractAddress, rewardTokenAddress, rewardA
         .then((newContractInstance) => {
             console.log(`SmartChef contract deployed at ${newContractInstance.options.address}`);
             // now we need to deposit rewardTokenAddress
-            sendRewardTokenToSmartChef(newContractInstance.options.address, rewardTokenAddress, rewardAmount)
+            //sendRewardTokenToSmartChef(newContractInstance.options.address, rewardTokenAddress, rewardAmount)
         });
 }
 
