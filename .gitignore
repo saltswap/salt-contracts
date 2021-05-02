@@ -9,3 +9,4 @@
 /accounts.json
 /truffle-config.js
 .env
+.DS_Store
